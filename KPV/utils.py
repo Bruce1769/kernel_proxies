@@ -72,6 +72,8 @@ def linear_kern(x, y):
 def l2_dist(x,y):
     return jnp.array((x - y)**2)
 
+
+# check whether the two elements are identical
 #@functools.partial(jax.jit, static_argnums=(0,1))
 def identifier(x,y):
     if (x!=y): 
@@ -86,6 +88,7 @@ def dist_func(func1: Callable, x,y):
     return jax.vmap(lambda x1: jax.vmap(lambda y1: func1( x1, y1))(y))(x)
 
 
+# radius basis function kernel 径向基核函数
 @jax.jit 
 def rbf_ker(x,y,scale=1):
     dist_mat=dist_func(l2_dist,x,y)
@@ -95,9 +98,9 @@ def rbf_ker(x,y,scale=1):
     coef=1/(2*scale*(gamma**2))
     return jnp.exp(-coef*dist_mat)
 
-@jax.jit 
+@jax.jit
 def identifier_ker(x,y):
-    return dist_func(identifier,x,y)
+    return dist_func(identifier,x,y) # 函数式编程，传参为函数identifier
 
 #% function h
 #@jax.jit
@@ -293,15 +296,15 @@ def cal_l_y (K, reg, y, low=0.00001, high=10, n=500):
         grid_search[lam]=cal_loocv(K, y, lam)
     return min(grid_search.items(), key=operator.itemgetter(1))[0]
 
-
+# 留一交叉验证loocv
 @jax.jit
 def cal_loocv_emb(K, kernel_y, lam):
     nD = K.shape[0]
     I = jnp.eye(nD)
-    Q = jsla.inv(K + lam * nD * I)
+    Q = jsla.inv(K + lam * nD * I)  # 这里是inverse的部分吧
     H = I - K.dot(Q)
     tildeH_inv = jnp.diag(1.0 / jnp.diag(H))
-    return jnp.trace(tildeH_inv @ H @ kernel_y @ H @ tildeH_inv)
+    return jnp.trace(tildeH_inv @ H @ kernel_y @ H @ tildeH_inv) # 求trace也就是迹
 
 
 def cal_l_w (K, kernel_y, low=0.0001, high=1, n=10, abs_low=.001):  
@@ -311,7 +314,7 @@ def cal_l_w (K, kernel_y, low=0.0001, high=1, n=10, abs_low=.001):
     grid_search={}
     for lam in lam_values:
         grid_search[lam]=cal_loocv_emb(K, kernel_y, lam)    
-    l,loo=min(grid_search.items(), key=operator.itemgetter(1))
+    l,loo=min(grid_search.items(), key=operator.itemgetter(1)) # 这里的key是先对要处理的数组进行预处理，然后再取极小值。
     
     '''while (abs(l-low)<tolerance and low> abs_low) :
             low=low *.1
@@ -551,7 +554,7 @@ def identifier(x,y):
         b=1
     return b
 
-
+# 是不是check identifier是不是相等
 def identifier_k(A,B):
     l=list(it.product(A,B))
     a=[]
@@ -572,7 +575,7 @@ def standardise(X):
     
     
     
-    
+# 
 def stage2_weights(Gamma_w, Sigma_inv):
             n_row = Gamma_w.shape[0]
             arr = [mat_mul(jnp.diag(Gamma_w[i, :]), Sigma_inv) for i in range(n_row)]
