@@ -56,9 +56,9 @@ def cal_alpha_opt_post(samp1,samp2,m1_train,m2_train, l_w_max, l_yw_max,lst_var,
             
             
                 
-            for sc in np.logspace(np.log10(scale_mn),np.log10(scale_mx),1):                       
+            for sc in np.logspace(np.log10(scale_mn),np.log10(scale_mx),1):  # 返回对数刻度上均匀的数字，但是为什么要这样               
                 for i in lst_var:   
-                    if  np.issubdtype(samp1[i],np.integer): #'''samp1[i]'''
+                    if  np.issubdtype(samp1[i],np.integer): #'''samp1[i]''' 判断一下samp1[i]是否是integer类型的子类型（integer类是int的超集）
                             k_11 = identifier_k  (jnp.array(samp1[i]), jnp.array(samp1[i]))
                             
                             if samp1.equals(samp2):
@@ -73,7 +73,7 @@ def cal_alpha_opt_post(samp1,samp2,m1_train,m2_train, l_w_max, l_yw_max,lst_var,
                             k_11 = identifier_k  (jnp.array(samp1[i]), jnp.array(samp1[i]))
                             
                             if samp1.equals(samp2):
-                                k_12=k_11
+                                k_12 = k_11
                                 k_22 = k_11
                             else: 
                                 k_12 = identifier_k  (jnp.array(samp1[i]), jnp.array(samp2[i]))
@@ -88,7 +88,7 @@ def cal_alpha_opt_post(samp1,samp2,m1_train,m2_train, l_w_max, l_yw_max,lst_var,
                                 k_22 = k_11
                                 
                             else: 
-                                k_12 = rbf_ker (jnp.array(samp1[i]), jnp.array(samp2[i]), sc)
+                                k_12 = rbf_ker (jnp.array(samp1[i]), jnp.array(samp2[i]), sc) # sc为什么是rbf_ker的参数啊
                                 k_22 = rbf_ker (jnp.array(samp2[i]), jnp.array(samp2[i]), sc)
  
                     
@@ -269,7 +269,6 @@ def cal_alpha_opt_post(samp1,samp2,m1_train,m2_train, l_w_max, l_yw_max,lst_var,
         '''
         #####
         
-        
               
         Gamma_w= jsla.solve(Core_w_az,hp_K_AZX12,sym_pos=True)
         
@@ -277,7 +276,7 @@ def cal_alpha_opt_post(samp1,samp2,m1_train,m2_train, l_w_max, l_yw_max,lst_var,
                         
         g_kw1_g=mat_mul(mat_trans(Gamma_w),kw1_gamma)
                 
-        Sigma=Hadamard_prod(g_kw1_g, Hadamard_prod(k_AA_2, k_XX_2))
+        Sigma=Hadamard_prod(g_kw1_g, Hadamard_prod(k_AA_2, k_XX_2)) # 对应论文里的sigma
         
         
         ## This to improve the efficiency and speed of the solution. One can estimate causal effect for smaller sample size 
@@ -309,7 +308,7 @@ def cal_alpha_opt_post(samp1,samp2,m1_train,m2_train, l_w_max, l_yw_max,lst_var,
         #mse=(1/m2_train)*(sum(jnp.absolute(jnp.array(samp2[lst_y])-mat_mul(D_t, alpha))))
         '''
 
-
+        # 最后计算出的核心的公式
         alpha= stage2_weights(Gamma_w, jsla.solve(Sigma + m2_train*l_yw*jnp.eye(m2_train),jnp.array(samp2[lst_y])))
   
         
